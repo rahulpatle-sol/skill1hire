@@ -1,0 +1,32 @@
+{
+  "name": "skill1hire",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "axios": "^1.7.9",
+    "js-cookie": "^3.0.5",
+    "sonner": "^1.7.1",
+    "react-hook-form": "^7.54.2",
+    "lucide-react": "^0.469.0",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "gsap": "^3.12.5",
+    "lenis": "^1.1.14"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.0"
+  }
+}

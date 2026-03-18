@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, Suspense } from "react"; // Added Suspense
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { Mail, Lock, User, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Btn, Field } from "@/components/ui";
-import { clsx } from "clsx";
 
 const ROLES = [
   { id: "candidate", emoji: "👨‍💻", label: "Candidate", sub: "I'm looking for a job" },
@@ -15,12 +14,16 @@ const ROLES = [
   { id: "mentor", emoji: "🎓", label: "Mentor", sub: "I want to teach" },
 ];
 
-export default function RegisterPage() {
+// 1. Move the form logic into a sub-component
+function RegisterForm() {
   const { register: reg } = useAuth();
   const params = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
+  
+  // Now useSearchParams is safe because it's inside Suspense
   const [role, setRole] = useState(params.get("role") || "candidate");
+  
   const { register, handleSubmit, formState: { errors } } = useForm();
 
   const onSubmit = async (data) => {
@@ -35,10 +38,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div>
-      <h1 className="font-display font-black text-3xl mb-1" style={{ color: "var(--text)" }}>Create account</h1>
-      <p className="text-sm mb-6" style={{ color: "var(--text-2)" }}>Join Skill1 Hire — free, forever.</p>
-
+    <>
       {/* Role selector */}
       <div className="grid grid-cols-3 gap-2 mb-6">
         {ROLES.map(r => (
@@ -78,6 +78,20 @@ export default function RegisterPage() {
           Create Account <ArrowRight size={15} />
         </Btn>
       </form>
+    </>
+  );
+}
+
+// 2. The main export just provides the layout and the Suspense boundary
+export default function RegisterPage() {
+  return (
+    <div>
+      <h1 className="font-display font-black text-3xl mb-1" style={{ color: "var(--text)" }}>Create account</h1>
+      <p className="text-sm mb-6" style={{ color: "var(--text-2)" }}>Join Skill1 Hire — free, forever.</p>
+
+      <Suspense fallback={<div className="p-10 text-center text-sm opacity-50">Loading form...</div>}>
+        <RegisterForm />
+      </Suspense>
 
       <p className="mt-4 text-[11px] text-center" style={{ color: "var(--text-3)" }}>
         By registering you agree to our Terms & Privacy Policy.

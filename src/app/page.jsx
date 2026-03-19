@@ -1,15 +1,14 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowRight, ShieldCheck, Zap, Users, Star, Briefcase,
   CheckCircle, ChevronDown, Code, BookOpen, Award,
-  TrendingUp, ArrowUpRight, Sparkles, Target, Globe,
-  Play, Building2, MapPin, Clock
+  TrendingUp, ArrowUpRight, Sparkles, Target,
+  Play, Building2, MapPin, Quote
 } from "lucide-react";
 
-// ── UNSPLASH images (free, no API) ───────────────
 const IMG = {
   hero: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1400&q=85&auto=format&fit=crop",
   team1: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80&auto=format&fit=crop&crop=face",
@@ -17,42 +16,17 @@ const IMG = {
   team3: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80&auto=format&fit=crop&crop=face",
   team4: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80&auto=format&fit=crop&crop=face",
   office: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80&auto=format&fit=crop",
-  code: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80&auto=format&fit=crop",
-  meeting: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&q=80&auto=format&fit=crop",
+  work1: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80&auto=format&fit=crop",
+  work2: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80&auto=format&fit=crop",
 };
-
-// ── CountUp hook ─────────────────────────────────
-function useCountUp(to, duration = 1800) {
-  const [val, setVal] = useState(0);
-  const ref = useRef(null);
-  const done = useRef(false);
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !done.current) {
-        done.current = true;
-        const t0 = Date.now();
-        const tick = () => {
-          const p = Math.min((Date.now() - t0) / duration, 1);
-          setVal(Math.round((1 - Math.pow(1 - p, 3)) * to));
-          if (p < 1) requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
-      }
-    }, { threshold: 0.4 });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [to, duration]);
-  return [val, ref];
-}
-
-function Num({ to, suffix = "" }) {
-  const [v, r] = useCountUp(to);
-  return <span ref={r}>{v}{suffix}</span>;
-}
 
 export default function Home() {
   const cursorDot = useRef(null);
   const cursorRing = useRef(null);
+
+  const scrollTo = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     let lenis;
@@ -62,8 +36,7 @@ export default function Home() {
       const { ScrollTrigger } = await import("gsap/ScrollTrigger");
       gsap.registerPlugin(ScrollTrigger);
 
-      // Lenis
-      lenis = new Lenis({ duration: 1.5, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+      lenis = new Lenis({ duration: 1.4, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
       lenis.on("scroll", ScrollTrigger.update);
       gsap.ticker.add(t => lenis.raf(t * 1000));
       gsap.ticker.lagSmoothing(0);
@@ -73,272 +46,336 @@ export default function Home() {
       const ring = cursorRing.current;
       let mx = 0, my = 0, rx = 0, ry = 0;
       if (dot && ring) {
-        window.addEventListener("mousemove", e => { mx = e.clientX; my = e.clientY; gsap.set(dot, { x: mx, y: my }); });
-        const loop = () => { rx += (mx - rx) * 0.1; ry += (my - ry) * 0.1; gsap.set(ring, { x: rx, y: ry }); requestAnimationFrame(loop); };
+        window.addEventListener("mousemove", e => {
+          mx = e.clientX; my = e.clientY;
+          gsap.set(dot, { x: mx, y: my });
+        });
+        const loop = () => {
+          rx += (mx - rx) * 0.1; ry += (my - ry) * 0.1;
+          gsap.set(ring, { x: rx, y: ry });
+          requestAnimationFrame(loop);
+        };
         loop();
-        document.querySelectorAll("a,button,[data-cursor]").forEach(el => {
-          el.addEventListener("mouseenter", () => gsap.to(ring, { width: 52, height: 52, borderColor: "rgba(245,158,11,0.8)", duration: 0.25 }));
-          el.addEventListener("mouseleave", () => gsap.to(ring, { width: 32, height: 32, borderColor: "rgba(245,158,11,0.35)", duration: 0.25 }));
+        document.querySelectorAll("a,button").forEach(el => {
+          el.addEventListener("mouseenter", () => gsap.to(ring, { width: 48, height: 48, borderColor: "rgba(245,158,11,0.7)", duration: 0.2 }));
+          el.addEventListener("mouseleave", () => gsap.to(ring, { width: 30, height: 30, borderColor: "rgba(245,158,11,0.3)", duration: 0.2 }));
         });
       }
 
-      // Hero animations
-      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
-      tl.from(".h-badge", { y: 24, opacity: 0, duration: 0.7 })
-        .from(".h-line", { y: "110%", duration: 0.9, stagger: 0.07 }, "-=0.3")
-        .from(".h-sub", { y: 20, opacity: 0, duration: 0.7 }, "-=0.5")
-        .from(".h-cta", { y: 16, opacity: 0, duration: 0.6, stagger: 0.08 }, "-=0.5")
-        .from(".h-img", { scale: 0.92, opacity: 0, duration: 1, ease: "power3.out" }, "-=0.8")
-        .from(".h-float-card", { y: 30, opacity: 0, duration: 0.7, stagger: 0.1 }, "-=0.6");
+      // Hero entrance
+      const tl = gsap.timeline({ defaults: { ease: "power4.out" }, delay: 0.1 });
+      tl.from(".h-eyebrow", { y: 20, opacity: 0, duration: 0.6 })
+        .from(".h-line", { y: "105%", duration: 0.85, stagger: 0.06 }, "-=0.3")
+        .from(".h-sub", { y: 16, opacity: 0, duration: 0.6 }, "-=0.4")
+        .from(".h-ctas > *", { y: 14, opacity: 0, duration: 0.5, stagger: 0.07 }, "-=0.3")
+        .from(".h-proof", { y: 12, opacity: 0, duration: 0.5 }, "-=0.3")
+        .from(".h-img-wrap", { x: 30, opacity: 0, duration: 1, ease: "power3.out" }, "-=0.8")
+        .from(".h-card-1", { y: 20, opacity: 0, duration: 0.6 }, "-=0.5")
+        .from(".h-card-2", { y: -20, opacity: 0, duration: 0.6 }, "-=0.4");
 
-      // Scroll-triggered reveals
+      // Scroll reveals
       gsap.utils.toArray(".reveal").forEach(el => {
-        gsap.fromTo(el, { y: 48, opacity: 0 }, {
-          y: 0, opacity: 1, duration: 0.9, ease: "power3.out",
-          scrollTrigger: { trigger: el, start: "top 88%", toggleActions: "play none none none" }
-        });
+        gsap.fromTo(el,
+          { y: 40, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.85, ease: "power3.out",
+            scrollTrigger: { trigger: el, start: "top 87%", toggleActions: "play none none none" } }
+        );
       });
       gsap.utils.toArray(".reveal-stagger").forEach(el => {
-        gsap.fromTo(el.children, { y: 36, opacity: 0 }, {
-          y: 0, opacity: 1, duration: 0.7, stagger: 0.1, ease: "power3.out",
-          scrollTrigger: { trigger: el, start: "top 84%", toggleActions: "play none none none" }
-        });
+        gsap.fromTo(el.children,
+          { y: 30, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.65, stagger: 0.09, ease: "power3.out",
+            scrollTrigger: { trigger: el, start: "top 83%", toggleActions: "play none none none" } }
+        );
       });
 
-      // Parallax hero image
-      gsap.to(".h-img", {
-        yPercent: -15,
-        scrollTrigger: { trigger: ".hero-section", start: "top top", end: "bottom top", scrub: 1.5 }
+      // Marquee
+      gsap.to(".marquee-track", { x: "-50%", duration: 20, ease: "none", repeat: -1 });
+
+      // Parallax
+      gsap.to(".h-img-wrap", {
+        yPercent: -12,
+        scrollTrigger: { trigger: "#hero", start: "top top", end: "bottom top", scrub: 1.5 }
       });
 
-      // Horizontal marquee
-      gsap.to(".marquee-track", { x: "-50%", duration: 22, ease: "none", repeat: -1 });
-
-      // Section bg gradients
-      gsap.utils.toArray(".orb-scroll").forEach((orb, i) => {
-        gsap.to(orb, {
-          yPercent: i % 2 === 0 ? -40 : 40, xPercent: i % 2 === 0 ? 10 : -10,
-          scrollTrigger: { trigger: orb.parentElement, start: "top bottom", end: "bottom top", scrub: 2 }
-        });
-      });
     })();
     return () => { if (lenis) lenis.destroy(); };
   }, []);
 
   const features = [
-    { icon: BookOpen, title: "Skill Assessments", desc: "Domain MCQ tests auto-scored in real-time. No cheating. Real knowledge.", color: "#f59e0b", bg: "rgba(245,158,11,0.08)" },
-    { icon: Code, title: "Capstone Projects", desc: "Candidates ship a live project — portfolio proof that speaks louder than any resume.", color: "#a5b4fc", bg: "rgba(99,102,241,0.08)" },
-    { icon: ShieldCheck, title: "Blue Tick Verified", desc: "Only candidates who pass the full gauntlet get verified. Zero compromise.", color: "#34d399", bg: "rgba(16,185,129,0.08)" },
-    { icon: Users, title: "Mentor Network", desc: "1:1 sessions with senior engineers. Rated, reviewed, and accountable.", color: "#f472b6", bg: "rgba(244,114,182,0.08)" },
-    { icon: Zap, title: "Smart Job Feed", desc: "Verified candidates unlock curated jobs. Only roles you're actually matched for.", color: "#22d3ee", bg: "rgba(34,211,238,0.08)" },
-    { icon: TrendingUp, title: "Live Scorecard", desc: "Track your assessment score, profile rank, and percentile in real-time.", color: "#fb923c", bg: "rgba(249,115,22,0.08)" },
+    { icon: BookOpen, title: "Skill Assessments", desc: "Domain MCQ tests. Auto-scored instantly. No room for faking knowledge.", accent: "#f59e0b" },
+    { icon: Code, title: "Capstone Projects", desc: "Ship something real. A live project beats a thousand resume bullet points.", accent: "#818cf8" },
+    { icon: ShieldCheck, title: "Verified Badge", desc: "Blue tick earned, not given. Pass everything to unlock your hiring profile.", accent: "#34d399" },
+    { icon: Users, title: "Mentor Network", desc: "1:1 with senior engineers. Rated after every session. Accountable always.", accent: "#fb7185" },
+    { icon: Zap, title: "Smart Job Feed", desc: "Unlocks only when you're verified. Jobs matched to your actual skill scores.", accent: "#38bdf8" },
+    { icon: TrendingUp, title: "Live Scorecard", desc: "See your rank, percentile, and skill breakdown update in real-time.", accent: "#fb923c" },
   ];
 
-  const steps = [
-    { n: "01", title: "Take Assessments", desc: "Curated MCQ tests for your domain. Auto-graded. Instant feedback.", icon: BookOpen },
-    { n: "02", title: "Ship Capstone", desc: "Build and submit a real project. Admin reviews every submission.", icon: Target },
-    { n: "03", title: "Get Verified", desc: "Earn the blue tick. Your job feed unlocks with matched listings.", icon: ShieldCheck },
-    { n: "04", title: "Get Hired", desc: "HRs see only verified talent. Faster decisions, zero noise.", icon: Sparkles },
+  const process = [
+    { n: "01", icon: BookOpen, title: "Take Assessments", desc: "Curated domain tests. Instant scoring. No second chances on the first attempt." },
+    { n: "02", icon: Target, title: "Ship a Capstone", desc: "Build and submit a real, live project. Our admin team reviews every single one." },
+    { n: "03", icon: ShieldCheck, title: "Get Verified", desc: "Pass both? You earn the blue tick. Your job feed unlocks immediately." },
+    { n: "04", icon: Sparkles, title: "Get Hired", desc: "HRs browse only verified profiles. No spam. Clean pipeline. Fast decisions." },
   ];
 
   const testimonials = [
-    { img: IMG.team1, name: "Rahul Mehta", role: "SDE-2 @ Razorpay", quote: "Skill1 Hire's capstone process pushed me to build something actually deployable. That project got me hired.", stars: 5 },
-    { img: IMG.team2, name: "Priya Nair", role: "Product @ Groww", quote: "As an HR, I cut 80% of my screening time. Every profile from this platform is already validated.", stars: 5 },
-    { img: IMG.team3, name: "Arjun Singh", role: "Full Stack @ CRED", quote: "The scorecard gave me a real metric to improve on. I went from 62% to 91% in 3 weeks.", stars: 5 },
-    { img: IMG.team4, name: "Sneha Patel", role: "Mentor & SRE @ Stripe", quote: "I mentor here because the candidates are serious. They've already done the work.", stars: 5 },
+    { img: IMG.team1, name: "Rahul Mehta", role: "SDE-2 @ Razorpay", quote: "The capstone forced me to build something actually deployable. That single project is what got me hired — not my resume." },
+    { img: IMG.team2, name: "Priya Nair", role: "HR Lead @ Groww", quote: "We reduced screening time by 80%. Every candidate from this platform comes pre-validated. It's a completely different quality of pipeline." },
+    { img: IMG.team3, name: "Arjun Singh", role: "Full Stack @ CRED", quote: "The scorecard is addictive. I went from 62% to 91% in three weeks just seeing that number every day." },
+    { img: IMG.team4, name: "Sneha Patel", role: "SRE Mentor @ Stripe", quote: "I mentor here because the candidates have already done the work. They ask better questions than anyone I've coached before." },
   ];
 
-  const logos = ["Razorpay", "Groww", "CRED", "Meesho", "Zepto", "Slice", "Jar", "Smallcase", "Freo", "PhonePe", "Razorpay", "Groww", "CRED", "Meesho", "Zepto", "Slice", "Jar", "Smallcase", "Freo", "PhonePe"];
-
-  const jobs = [
-    { title: "Senior React Developer", co: "Razorpay", mode: "Remote", lpa: "₹18–28L", domain: "Frontend" },
-    { title: "Backend Engineer", co: "Groww", mode: "Hybrid", lpa: "₹24–36L", domain: "Backend" },
-    { title: "Full Stack SDE-2", co: "CRED", mode: "Onsite", lpa: "₹20–32L", domain: "Full Stack" },
-  ];
+  const logos = ["Razorpay","Groww","CRED","Meesho","Zepto","Slice","PhonePe","Jar","Smallcase","Freo",
+                  "Razorpay","Groww","CRED","Meesho","Zepto","Slice","PhonePe","Jar","Smallcase","Freo"];
 
   return (
     <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", color: "var(--text)", background: "var(--bg)" }}>
 
-      {/* Cursor */}
+      {/* Custom cursor */}
       <div ref={cursorDot} className="c-cursor hidden lg:block"><div className="c-cursor-dot" /></div>
       <div ref={cursorRing} className="c-cursor-ring hidden lg:block" />
 
-      {/* ─── Navbar ──────────────────────────────── */}
-      <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 lg:px-10 py-4 card-glass" style={{ borderRadius: 0, borderTop: "none", borderLeft: "none", borderRight: "none" }}>
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black font-display" style={{ background: "var(--amber)", color: "#050507" }}>S1</div>
-          <span className="font-display font-bold tracking-tight" style={{ color: "var(--text)" }}>Skill1 <span style={{ color: "var(--amber)" }}>Hire</span></span>
+      {/* ── Navbar ─────────────────────────────────── */}
+      <nav className="fixed top-0 inset-x-0 z-50 px-6 lg:px-12 py-4 flex items-center justify-between"
+        style={{ background: "rgba(5,5,7,0.75)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center font-display font-black text-sm transition-transform group-hover:scale-105"
+            style={{ background: "var(--amber)", color: "#050507" }}>S1</div>
+          <span className="font-display font-bold tracking-tight text-[15px]" style={{ color: "var(--text)" }}>
+            Skill1 <span style={{ color: "var(--amber)" }}>Hire</span>
+          </span>
         </Link>
+
         <div className="hidden lg:flex items-center gap-1">
-          {["Features", "How It Works", "For HRs", "Mentors"].map(l => <button key={l} className="btn-ghost text-xs">{l}</button>)}
+          {[
+            { label: "Features", id: "features" },
+            { label: "How It Works", id: "process" },
+            { label: "For HRs", id: "for-hrs" },
+            { label: "Mentors", id: "mentors" },
+          ].map(({ label, id }) => (
+            <button key={id} onClick={() => scrollTo(id)}
+              className="px-4 py-2 text-xs font-medium rounded-lg transition-all duration-150"
+              style={{ color: "var(--text-2)" }}
+              onMouseEnter={e => e.currentTarget.style.color = "var(--text)"}
+              onMouseLeave={e => e.currentTarget.style.color = "var(--text-2)"}>
+              {label}
+            </button>
+          ))}
         </div>
+
         <div className="flex items-center gap-3">
-          <Link href="/login" className="btn-ghost text-sm">Sign in</Link>
-          <Link href="/register" className="btn-primary btn-sm">Get Started <ArrowRight size={13} /></Link>
+          <Link href="/login"
+            className="px-4 py-2 text-sm font-medium rounded-xl transition-all"
+            style={{ color: "var(--text-2)" }}
+            onMouseEnter={e => e.currentTarget.style.color = "var(--text)"}
+            onMouseLeave={e => e.currentTarget.style.color = "var(--text-2)"}>
+            Sign in
+          </Link>
+          <Link href="/register"
+            className="btn-primary btn-sm">
+            Get Started <ArrowRight size={13} />
+          </Link>
         </div>
       </nav>
 
-      {/* ─── Hero ─────────────────────────────────── */}
-      <section className="hero-section relative min-h-screen flex flex-col justify-center pt-24 pb-20 px-6 lg:px-10 overflow-hidden grid-bg">
-        {/* Orbs */}
-        <div className="orb-scroll absolute w-[700px] h-[700px] rounded-full blur-[120px] pointer-events-none -top-40 -left-40 opacity-[0.12]" style={{ background: "radial-gradient(circle, #f59e0b 0%, #f97316 60%, transparent 100%)" }} />
-        <div className="absolute w-[400px] h-[400px] rounded-full blur-[80px] pointer-events-none bottom-0 right-[10%] opacity-[0.07]" style={{ background: "radial-gradient(circle, var(--indigo) 0%, transparent 70%)" }} />
+      {/* ── Hero ──────────────────────────────────── */}
+      <section id="hero" className="relative min-h-screen flex items-center pt-20 pb-16 px-6 lg:px-12 overflow-hidden grid-bg">
+        {/* Ambient orb */}
+        <div className="absolute -top-40 -left-40 w-[640px] h-[640px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 70%)", filter: "blur(60px)" }} />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%)", filter: "blur(80px)" }} />
 
-        <div className="relative z-10 max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left */}
+        <div className="relative z-10 max-w-7xl mx-auto w-full grid lg:grid-cols-[1fr_1.1fr] gap-12 xl:gap-20 items-center">
+
+          {/* LEFT */}
           <div>
-            <div className="h-badge inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold mb-8 badge-amber">
+            {/* Eyebrow */}
+            <div className="h-eyebrow inline-flex items-center gap-2.5 mb-7 px-3.5 py-1.5 rounded-full text-xs font-semibold"
+              style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", color: "var(--amber)" }}>
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "var(--amber)" }} />
-              India's #1 verified hiring platform
+              India's first verified hiring platform
             </div>
 
-            <div className="overflow-hidden mb-6">
-              <h1 className="font-display font-black leading-[1.05] tracking-tight" style={{ fontSize: "clamp(3.2rem, 7vw, 6rem)" }}>
-                {["Hire talent", "that already", "proved it."].map((line, i) => (
-                  <div key={i} className="overflow-hidden">
-                    <span className={`h-line block ${i === 2 ? "text-gradient" : ""}`}>{line}</span>
-                  </div>
-                ))}
-              </h1>
-            </div>
+            {/* Headline */}
+            <h1 className="font-display font-black leading-[1.04] tracking-[-0.02em] mb-6"
+              style={{ fontSize: "clamp(3rem, 6.5vw, 5.5rem)" }}>
+              {["Hire talent", "that already", "proved it."].map((line, i) => (
+                <div key={i} className="overflow-hidden">
+                  <span className={`h-line block ${i === 2 ? "text-gradient" : ""}`}>{line}</span>
+                </div>
+              ))}
+            </h1>
 
-            <p className="h-sub text-lg mb-10 max-w-lg leading-relaxed" style={{ color: "var(--text-2)" }}>
-              Every candidate is assessed, scored, and verified before they can apply.
-              <strong style={{ color: "var(--text)" }}> No resume spam. Only proof.</strong>
+            <p className="h-sub text-lg leading-relaxed mb-9 max-w-[480px]" style={{ color: "var(--text-2)", fontWeight: 400 }}>
+              Every candidate is assessed, scored, and verified before they can see a single job listing.{" "}
+              <span style={{ color: "var(--text)", fontWeight: 500 }}>No spam. Only proof.</span>
             </p>
 
-            <div className="flex flex-wrap gap-4 mb-12">
-              <Link href="/register?role=candidate" className="h-cta btn-primary btn-lg">I'm a Candidate <ArrowRight size={16} /></Link>
-              <Link href="/register?role=hr" className="h-cta btn-secondary btn-lg">I'm Hiring</Link>
-              <Link href="/jobs" className="h-cta btn-ghost text-sm">
-                <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.08)" }}>
-                  <Play size={11} className="fill-current ml-0.5" />
-                </span>
-                Browse Jobs
+            {/* CTAs */}
+            <div className="h-ctas flex flex-wrap gap-3 mb-10">
+              <Link href="/register?role=candidate" className="btn-primary btn-lg">
+                I'm a Candidate <ArrowRight size={16} />
               </Link>
+              <Link href="/register?role=hr" className="btn-secondary btn-lg">
+                Start Hiring
+              </Link>
+              <button onClick={() => scrollTo("process")}
+                className="flex items-center gap-2.5 px-5 py-3 text-sm font-medium rounded-2xl transition-all"
+                style={{ color: "var(--text-2)" }}
+                onMouseEnter={e => e.currentTarget.style.color = "var(--text)"}
+                onMouseLeave={e => e.currentTarget.style.color = "var(--text-2)"}>
+                <span className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+                  style={{ background: "rgba(255,255,255,0.07)" }}>
+                  <Play size={10} className="fill-current ml-0.5" />
+                </span>
+                See how it works
+              </button>
             </div>
 
             {/* Social proof */}
-            <div className="h-cta flex items-center gap-4">
-              <div className="flex -space-x-2">
+            <div className="h-proof flex items-center gap-4">
+              <div className="flex -space-x-2.5">
                 {[IMG.team1, IMG.team2, IMG.team3, IMG.team4].map((src, i) => (
-                  <img key={i} src={src} alt="" className="w-9 h-9 rounded-full border-2 object-cover" style={{ borderColor: "var(--bg)" }} />
+                  <img key={i} src={src} alt="" className="w-9 h-9 rounded-full object-cover ring-2"
+                    style={{ ringColor: "var(--bg)" }} />
                 ))}
               </div>
               <div>
-                <div className="flex gap-0.5 mb-0.5">
-                  {[...Array(5)].map((_, i) => <Star key={i} size={12} className="fill-amber-400 text-amber-400" />)}
+                <div className="flex items-center gap-1 mb-0.5">
+                  {[...Array(5)].map((_, i) => <Star key={i} size={11} className="fill-amber-400 text-amber-400" />)}
+                  <span className="text-xs font-bold ml-1" style={{ color: "var(--amber)" }}>4.9</span>
                 </div>
-                <p className="text-xs" style={{ color: "var(--text-2)" }}>Loved by <strong style={{ color: "var(--text)" }}>2,400+</strong> professionals</p>
+                <p className="text-xs" style={{ color: "var(--text-2)" }}>
+                  Trusted by <strong style={{ color: "var(--text)" }}>2,400+</strong> professionals
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Right — Hero image + floating cards */}
-          <div className="relative hidden lg:block">
-            <div className="h-img relative rounded-3xl overflow-hidden" style={{ height: "560px" }}>
-              <Image src={IMG.hero} alt="Team at work" fill className="object-cover" style={{ filter: "brightness(0.6) saturate(0.9)" }} />
-              <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.08) 0%, transparent 60%, rgba(99,102,241,0.08) 100%)" }} />
-              {/* Overlay stat */}
-              <div className="absolute bottom-6 left-6 right-6 card-glass p-4 rounded-2xl">
+          {/* RIGHT — Hero visual */}
+          <div className="relative h-img-wrap hidden lg:block" style={{ height: "580px" }}>
+            {/* Main image */}
+            <div className="absolute inset-0 rounded-3xl overflow-hidden"
+              style={{ border: "1px solid rgba(255,255,255,0.07)" }}>
+              <Image src={IMG.hero} alt="Team collaborating" fill className="object-cover"
+                style={{ filter: "brightness(0.55) saturate(0.85)" }} />
+              <div className="absolute inset-0"
+                style={{ background: "linear-gradient(160deg, rgba(245,158,11,0.06) 0%, transparent 50%, rgba(5,5,7,0.6) 100%)" }} />
+
+              {/* Bottom stat overlay */}
+              <div className="absolute bottom-5 left-5 right-5 rounded-2xl p-4"
+                style={{ background: "rgba(12,12,16,0.85)", backdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.07)" }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs mb-1" style={{ color: "var(--text-2)" }}>Average Hire Time</p>
+                    <p className="text-xs mb-1" style={{ color: "var(--text-2)" }}>Average time to hire</p>
                     <p className="font-black text-2xl font-display" style={{ color: "var(--amber)" }}>4.2 days</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs mb-1" style={{ color: "var(--text-2)" }}>vs industry avg</p>
-                    <p className="font-bold text-sm" style={{ color: "#34d399" }}>↓ 72% faster</p>
+                    <p className="text-xs mb-1" style={{ color: "var(--text-2)" }}>vs. industry average</p>
+                    <p className="font-bold text-sm" style={{ color: "#34d399" }}>72% faster ↓</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Floating cards */}
-            <div className="h-float-card absolute -left-8 top-8 card p-4 w-56 glow-sm">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "var(--green-dim)" }}>
-                  <ShieldCheck size={14} style={{ color: "#34d399" }} />
+            {/* Float card 1 — verified badge */}
+            <div className="h-card-1 absolute -left-10 top-10 rounded-2xl p-4 w-[200px]"
+              style={{ background: "var(--surface-2)", border: "1px solid rgba(255,255,255,0.09)", boxShadow: "0 20px 40px rgba(0,0,0,0.5)" }}>
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-7 h-7 rounded-xl flex items-center justify-center"
+                  style={{ background: "rgba(52,211,153,0.12)" }}>
+                  <ShieldCheck size={13} style={{ color: "#34d399" }} />
                 </div>
-                <p className="text-xs font-bold">Candidate Verified</p>
+                <p className="text-xs font-bold" style={{ color: "var(--text)" }}>Verified ✓</p>
               </div>
-              <div className="flex items-center gap-2">
-                <img src={IMG.team3} alt="" className="w-7 h-7 rounded-xl object-cover" />
+              <div className="flex items-center gap-2.5">
+                <img src={IMG.team3} alt="" className="w-8 h-8 rounded-xl object-cover shrink-0" />
                 <div>
-                  <p className="text-xs font-semibold">Arjun Singh</p>
-                  <p className="text-[10px]" style={{ color: "var(--amber)" }}>Score: 91%</p>
+                  <p className="text-xs font-semibold" style={{ color: "var(--text)" }}>Arjun Singh</p>
+                  <p className="text-[10px] font-bold" style={{ color: "var(--amber)" }}>Score 91%</p>
                 </div>
               </div>
             </div>
 
-            <div className="h-float-card absolute -right-4 top-1/3 card p-4 w-52">
-              <p className="text-xs mb-2" style={{ color: "var(--text-2)" }}>New offer 🎉</p>
-              <p className="font-bold text-sm mb-1">Senior Developer</p>
-              <p className="text-xs" style={{ color: "var(--amber)" }}>Razorpay · ₹28 LPA</p>
+            {/* Float card 2 — new offer */}
+            <div className="h-card-2 absolute -right-6 top-[38%] rounded-2xl p-4 w-[185px]"
+              style={{ background: "var(--surface-2)", border: "1px solid rgba(255,255,255,0.09)", boxShadow: "0 20px 40px rgba(0,0,0,0.5)" }}>
+              <p className="text-[10px] font-semibold mb-2" style={{ color: "var(--text-2)" }}>New offer 🎉</p>
+              <p className="text-sm font-bold mb-0.5" style={{ color: "var(--text)" }}>Senior Developer</p>
+              <p className="text-xs font-semibold" style={{ color: "var(--amber)" }}>Razorpay · ₹28 LPA</p>
             </div>
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
           <ChevronDown size={18} className="animate-bounce" style={{ color: "var(--text-3)" }} />
         </div>
       </section>
 
-      {/* ─── Marquee ──────────────────────────────── */}
-      <div className="py-5 overflow-hidden" style={{ borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
-        <div className="marquee-track flex gap-12 whitespace-nowrap" style={{ width: "max-content" }}>
+      {/* ── Marquee ────────────────────────────────── */}
+      <div className="py-5 overflow-hidden"
+        style={{ borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
+        <div className="marquee-track flex gap-14 whitespace-nowrap" style={{ width: "max-content" }}>
           {logos.map((c, i) => (
-            <span key={i} className="text-xs font-black uppercase tracking-[0.25em]" style={{ color: "var(--text-3)" }}>{c}</span>
+            <span key={i} className="text-[11px] font-black uppercase tracking-[0.22em]"
+              style={{ color: "var(--text-3)" }}>{c}</span>
           ))}
         </div>
-        <p className="text-center text-[11px] mt-2.5 tracking-wider uppercase" style={{ color: "var(--text-3)" }}>Companies hiring verified talent</p>
+        <p className="text-center text-[10px] uppercase tracking-[0.2em] mt-2.5" style={{ color: "var(--text-3)" }}>
+          Companies hiring verified talent from Skill1 Hire
+        </p>
       </div>
 
-      {/* ─── Stats ─────────────────────────────────── */}
-      <section className="py-28 px-6">
+      {/* ── Stats ──────────────────────────────────── */}
+      <section className="py-24 px-6">
         <div className="max-w-5xl mx-auto">
-          <div className="reveal grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          <div className="reveal grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { n: 2400, s: "+", l: "Verified Candidates" },
-              { n: 98, s: "%", l: "Hire Success Rate" },
-              { n: 3, s: "x", l: "Faster Than Industry" },
-              { n: 0, s: " spam", l: "Resume Noise" },
-            ].map(({ n, s, l }) => (
-              <div key={l}>
-                <p className="font-black font-display mb-2" style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)", color: "var(--amber)", textShadow: "0 0 40px rgba(245,158,11,0.4)" }}>
-                  <Num to={n} suffix={s} />
+              { val: "2,400+", label: "Verified Candidates" },
+              { val: "98%", label: "Hire Success Rate" },
+              { val: "3×", label: "Faster Than Industry" },
+              { val: "Zero", label: "Resume Spam" },
+            ].map(({ val, label }) => (
+              <div key={label}>
+                <p className="font-display font-black mb-2"
+                  style={{ fontSize: "clamp(2.2rem, 4vw, 3.5rem)", color: "var(--amber)", textShadow: "0 0 32px rgba(245,158,11,0.35)" }}>
+                  {val}
                 </p>
-                <p className="text-sm" style={{ color: "var(--text-2)" }}>{l}</p>
+                <p className="text-sm" style={{ color: "var(--text-2)" }}>{label}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── How it Works ──────────────────────────── */}
-      <section className="py-28 px-6 relative overflow-hidden">
-        <div className="orb-scroll absolute w-[500px] h-[500px] rounded-full blur-[100px] pointer-events-none -bottom-20 -right-20 opacity-[0.07]" style={{ background: "var(--amber)" }} />
+      {/* ── Process ────────────────────────────────── */}
+      <section id="process" className="py-24 px-6 relative overflow-hidden" style={{ background: "var(--surface)" }}>
         <div className="max-w-5xl mx-auto relative z-10">
-          <div className="reveal text-center mb-20">
-            <p className="eyebrow mb-4">The Process</p>
-            <h2 className="font-display font-black leading-tight mb-4" style={{ fontSize: "clamp(2.4rem, 5vw, 4rem)" }}>
-              4 steps from zero<br />to <span className="text-gradient">hired.</span>
+          <div className="reveal text-center mb-16">
+            <p className="eyebrow mb-3">The Process</p>
+            <h2 className="font-display font-black leading-[1.1] mb-4"
+              style={{ fontSize: "clamp(2.2rem, 4.5vw, 3.8rem)" }}>
+              Four steps from zero<br />to <span className="text-gradient">hired.</span>
             </h2>
-            <p className="text-base max-w-xl mx-auto" style={{ color: "var(--text-2)" }}>
-              We designed every step to prove real ability — not interview theater.
+            <p className="text-base max-w-lg mx-auto" style={{ color: "var(--text-2)" }}>
+              Every step designed to prove real ability — not coach interview theater.
             </p>
           </div>
 
-          <div className="reveal-stagger grid md:grid-cols-2 gap-5">
-            {steps.map(({ n, title, desc, icon: Icon }) => (
-              <div key={n} className="card-hover p-8 group relative overflow-hidden">
-                <div className="absolute top-0 right-0 font-black font-display opacity-[0.04] leading-none" style={{ fontSize: "7rem", color: "var(--amber)" }}>{n}</div>
+          <div className="reveal-stagger grid md:grid-cols-2 gap-4">
+            {process.map(({ n, icon: Icon, title, desc }) => (
+              <div key={n} className="card-hover p-7 group relative overflow-hidden">
+                <div className="absolute -top-2 -right-2 font-black font-display leading-none select-none"
+                  style={{ fontSize: "6rem", color: "rgba(245,158,11,0.045)" }}>{n}</div>
                 <div className="relative">
-                  <p className="eyebrow mb-4">{n}</p>
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110" style={{ background: "var(--amber-dim)" }}>
-                    <Icon size={22} style={{ color: "var(--amber)" }} />
+                  <p className="eyebrow mb-5">{n}</p>
+                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-105"
+                    style={{ background: "var(--amber-dim)" }}>
+                    <Icon size={20} style={{ color: "var(--amber)" }} />
                   </div>
-                  <h3 className="font-display font-bold text-xl mb-2">{title}</h3>
+                  <h3 className="font-display font-bold text-xl mb-2" style={{ color: "var(--text)" }}>{title}</h3>
                   <p className="text-sm leading-relaxed" style={{ color: "var(--text-2)" }}>{desc}</p>
                 </div>
               </div>
@@ -347,22 +384,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── Features ──────────────────────────────── */}
-      <section className="py-28 px-6" style={{ background: "var(--surface)" }}>
+      {/* ── Features ───────────────────────────────── */}
+      <section id="features" className="py-24 px-6">
         <div className="max-w-5xl mx-auto">
-          <div className="reveal text-center mb-20">
-            <p className="eyebrow mb-4">Features</p>
-            <h2 className="font-display font-black leading-tight mb-4" style={{ fontSize: "clamp(2.4rem, 5vw, 4rem)" }}>
+          <div className="reveal text-center mb-16">
+            <p className="eyebrow mb-3">Features</p>
+            <h2 className="font-display font-black leading-[1.1] mb-4"
+              style={{ fontSize: "clamp(2.2rem, 4.5vw, 3.8rem)" }}>
               Built for serious<br /><span className="text-gradient">hiring teams.</span>
             </h2>
           </div>
+
           <div className="reveal-stagger grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {features.map(({ icon: Icon, title, desc, color, bg }) => (
+            {features.map(({ icon: Icon, title, desc, accent }) => (
               <div key={title} className="card-hover p-6 group">
-                <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" style={{ background: bg }}>
-                  <Icon size={20} style={{ color }} />
+                <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-105"
+                  style={{ background: `${accent}14` }}>
+                  <Icon size={19} style={{ color: accent }} />
                 </div>
-                <h3 className="font-display font-bold mb-2 text-base">{title}</h3>
+                <h3 className="font-display font-bold text-[15px] mb-2" style={{ color: "var(--text)" }}>{title}</h3>
                 <p className="text-sm leading-relaxed" style={{ color: "var(--text-2)" }}>{desc}</p>
               </div>
             ))}
@@ -370,181 +410,161 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── Platform Showcase ──────────────────────── */}
-      <section className="py-28 px-6 relative overflow-hidden">
-        <div className="orb-scroll absolute w-[600px] h-[600px] rounded-full blur-[120px] pointer-events-none top-1/4 -left-40 opacity-[0.06]" style={{ background: "var(--indigo)" }} />
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="reveal text-center mb-20">
-            <p className="eyebrow mb-4">Platform Preview</p>
-            <h2 className="font-display font-black leading-tight" style={{ fontSize: "clamp(2.4rem, 5vw, 4rem)" }}>
-              See it in <span className="text-gradient">action.</span>
-            </h2>
-          </div>
-
-          {/* 3-column showcase grid */}
-          <div className="reveal-stagger grid lg:grid-cols-3 gap-5">
-            {/* Scorecard */}
-            <div className="card p-6 lg:col-span-2 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-10" style={{ background: "var(--amber)", transform: "translate(30%,-30%)" }} />
-              <div className="badge-amber mb-4">👤 Candidate Dashboard</div>
-              <h3 className="font-display font-bold text-lg mb-5">Your Verified Scorecard</h3>
-              <div className="space-y-4">
-                {[
-                  { name: "React.js & Ecosystem", score: 92, color: "#f59e0b" },
-                  { name: "Node.js & APIs", score: 87, color: "#a5b4fc" },
-                  { name: "System Design", score: 78, color: "#34d399" },
-                  { name: "Data Structures", score: 81, color: "#f472b6" },
-                ].map(item => (
-                  <div key={item.name}>
-                    <div className="flex justify-between text-xs mb-1.5">
-                      <span style={{ color: "var(--text-2)" }}>{item.name}</span>
-                      <span className="font-bold" style={{ color: item.color }}>{item.score}%</span>
-                    </div>
-                    <div className="h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
-                      <div className="h-1.5 rounded-full transition-all" style={{ width: `${item.score}%`, background: item.color }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-5 pt-5 flex items-center justify-between" style={{ borderTop: "1px solid var(--border)" }}>
-                <span className="text-sm" style={{ color: "var(--text-2)" }}>Overall HireScore™</span>
-                <span className="font-black text-3xl font-display" style={{ color: "var(--amber)", textShadow: "0 0 24px rgba(245,158,11,0.4)" }}>85%</span>
-              </div>
-            </div>
-
-            {/* HR View */}
-            <div className="card p-6">
-              <div className="badge-dim mb-4">🏢 HR Dashboard</div>
-              <h3 className="font-display font-bold text-base mb-4">Top Applicants</h3>
-              <div className="space-y-3">
-                {[
-                  { name: "Arjun S.", score: 91, img: IMG.team3 },
-                  { name: "Priya N.", score: 87, img: IMG.team2 },
-                  { name: "Rahul M.", score: 84, img: IMG.team1 },
-                ].map(a => (
-                  <div key={a.name} className="flex items-center justify-between p-3 rounded-2xl" style={{ background: "rgba(255,255,255,0.03)" }}>
-                    <div className="flex items-center gap-2.5">
-                      <img src={a.img} alt="" className="w-8 h-8 rounded-xl object-cover" />
-                      <span className="text-sm font-medium">{a.name}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-bold" style={{ color: "var(--amber)" }}>{a.score}%</span>
-                      <ShieldCheck size={13} style={{ color: "var(--amber)" }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Job Feed */}
-            <div className="card p-6 lg:col-span-2">
-              <div className="badge-green mb-4">💼 Verified Job Feed</div>
-              <div className="space-y-3">
-                {jobs.map(job => (
-                  <div key={job.title} className="flex items-center justify-between p-4 rounded-2xl group cursor-pointer transition-all" style={{ background: "rgba(255,255,255,0.03)" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(245,158,11,0.04)"}
-                    onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}>
-                    <div>
-                      <p className="font-semibold text-sm mb-1">{job.title}</p>
-                      <div className="flex items-center gap-2 text-xs" style={{ color: "var(--text-2)" }}>
-                        <Building2 size={11} />{job.co}
-                        <span className="badge-dim badge !py-0">{job.mode}</span>
-                        <span className="badge-indigo badge !py-0">{job.domain}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-bold text-sm" style={{ color: "var(--amber)" }}>{job.lpa}</span>
-                      <ArrowUpRight size={14} className="group-hover:text-amber-400 transition-colors" style={{ color: "var(--text-3)" }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Mentor card */}
-            <div className="card p-6">
-              <div className="badge-purple mb-4">🎓 Mentor Session</div>
-              <div className="flex items-center gap-3 mb-4">
-                <img src={IMG.team4} alt="" className="w-12 h-12 rounded-2xl object-cover" />
-                <div>
-                  <p className="font-bold text-sm">Sneha Patel</p>
-                  <p className="text-xs" style={{ color: "var(--text-2)" }}>SRE @ Stripe · 6 yrs</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-1.5 mb-5">
-                {["System Design", "DSA", "K8s"].map(t => <span key={t} className="badge badge-indigo">{t}</span>)}
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex gap-0.5">{[...Array(5)].map((_, i) => <Star key={i} size={12} className="fill-amber-400 text-amber-400" />)}</div>
-                <span className="font-bold text-sm" style={{ color: "var(--amber)" }}>₹900/60min</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Image Feature Section ─────────────────── */}
-      <section className="py-28 px-6" style={{ background: "var(--surface)" }}>
+      {/* ── For HRs — image section ─────────────────── */}
+      <section id="for-hrs" className="py-24 px-6" style={{ background: "var(--surface)" }}>
         <div className="max-w-6xl mx-auto">
           <div className="reveal grid lg:grid-cols-2 gap-16 items-center">
-            <div className="relative rounded-3xl overflow-hidden" style={{ height: "480px" }}>
-              <Image src={IMG.office} alt="Modern office" fill className="object-cover" style={{ filter: "brightness(0.55) saturate(0.8)" }} />
-              <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 40%, rgba(12,12,16,0.95) 100%)" }} />
-              <div className="absolute bottom-8 left-8 right-8">
-                <div className="card p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold" style={{ color: "var(--text-2)" }}>Active Hiring Rounds</span>
-                    <span className="badge-green badge">Live</span>
-                  </div>
-                  <p className="font-black text-2xl font-display" style={{ color: "var(--text)" }}>24 <span className="text-base font-normal" style={{ color: "var(--text-2)" }}>open roles</span></p>
+
+            {/* Image */}
+            <div className="relative rounded-3xl overflow-hidden" style={{ height: "500px" }}>
+              <Image src={IMG.office} alt="Modern workplace" fill className="object-cover"
+                style={{ filter: "brightness(0.5) saturate(0.8)" }} />
+              <div className="absolute inset-0"
+                style={{ background: "linear-gradient(180deg, transparent 30%, rgba(12,12,16,0.9) 100%)" }} />
+              {/* Overlay card */}
+              <div className="absolute bottom-6 left-6 right-6 rounded-2xl p-5"
+                style={{ background: "rgba(12,12,16,0.9)", backdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold" style={{ color: "var(--text-2)" }}>Active Hiring Rounds</p>
+                  <span className="badge-green badge">Live</span>
                 </div>
+                <p className="font-display font-black text-2xl" style={{ color: "var(--text)" }}>
+                  24 <span className="text-base font-normal" style={{ color: "var(--text-2)" }}>open roles</span>
+                </p>
               </div>
             </div>
+
+            {/* Copy */}
             <div>
               <p className="eyebrow mb-5">For HRs & Companies</p>
-              <h2 className="font-display font-black mb-6 leading-tight" style={{ fontSize: "clamp(2rem, 4vw, 3.2rem)" }}>
-                Stop reviewing<br /><span className="text-gradient">200 bad resumes.</span>
+              <h2 className="font-display font-black leading-[1.1] mb-6"
+                style={{ fontSize: "clamp(2rem, 4vw, 3rem)" }}>
+                Stop reviewing<br />
+                <span className="text-gradient">200 bad resumes.</span>
               </h2>
               <p className="text-base leading-relaxed mb-8" style={{ color: "var(--text-2)" }}>
-                Every candidate on Skill1 Hire has already passed your first 3 rounds of screening. Real assessment scores, verified projects, and live portfolio.
+                Every candidate on Skill1 Hire has already passed your first three rounds of screening — skill tests, live project review, and admin verification.
               </p>
-              <div className="space-y-4 mb-8">
-                {["See verified skill scores, not just keywords", "Real capstone projects — not just bullet points", "Faster decisions, better quality hires", "No subscription. Post and hire."].map(f => (
+              <div className="space-y-3 mb-8">
+                {[
+                  "Verified skill scores, not just job titles",
+                  "Real capstone projects you can actually view",
+                  "Faster shortlisting, better quality hires",
+                  "Post jobs free — no subscription needed",
+                ].map(f => (
                   <div key={f} className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style={{ background: "var(--green-dim)" }}>
-                      <CheckCircle size={12} style={{ color: "#34d399" }} />
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                      style={{ background: "var(--green-dim)" }}>
+                      <CheckCircle size={11} style={{ color: "#34d399" }} />
                     </div>
                     <span className="text-sm" style={{ color: "var(--text-2)" }}>{f}</span>
                   </div>
                 ))}
               </div>
-              <Link href="/register?role=hr" className="btn-primary">Start Hiring <ArrowRight size={15} /></Link>
+              <Link href="/register?role=hr" className="btn-primary">
+                Start Hiring Free <ArrowRight size={15} />
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─── Testimonials ──────────────────────────── */}
-      <section className="py-28 px-6">
+      {/* ── Mentors section ─────────────────────────── */}
+      <section id="mentors" className="py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="reveal grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <p className="eyebrow mb-5">Mentor Network</p>
+              <h2 className="font-display font-black leading-[1.1] mb-6"
+                style={{ fontSize: "clamp(2rem, 4vw, 3rem)" }}>
+                Learn from people<br />
+                <span className="text-gradient">already there.</span>
+              </h2>
+              <p className="text-base leading-relaxed mb-8" style={{ color: "var(--text-2)" }}>
+                Book 1:1 sessions with verified senior engineers from top companies. Every mentor is reviewed after every session — accountability built in.
+              </p>
+              <div className="space-y-3 mb-8">
+                {[
+                  "Verified professionals from Stripe, Google, Razorpay",
+                  "Rated and reviewed after every session",
+                  "Book 30, 60, or 90 min slots directly",
+                  "Affordable rates. Real expertise.",
+                ].map(f => (
+                  <div key={f} className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                      style={{ background: "var(--amber-dim)" }}>
+                      <CheckCircle size={11} style={{ color: "var(--amber)" }} />
+                    </div>
+                    <span className="text-sm" style={{ color: "var(--text-2)" }}>{f}</span>
+                  </div>
+                ))}
+              </div>
+              <Link href="/register?role=mentor" className="btn-secondary">
+                Become a Mentor <ArrowRight size={15} />
+              </Link>
+            </div>
+
+            {/* Mentor cards */}
+            <div className="space-y-3">
+              {[
+                { img: IMG.team4, name: "Sneha Patel", role: "SRE @ Stripe", exp: "6 yrs", skills: ["System Design", "K8s", "SRE"], rate: "₹900/60min", rating: 4.9 },
+                { img: IMG.team1, name: "Rahul Mehta", role: "SDE-3 @ Razorpay", exp: "5 yrs", skills: ["React", "Node.js", "DSA"], rate: "₹750/60min", rating: 4.8 },
+                { img: IMG.team3, name: "Arjun Singh", role: "Full Stack @ CRED", exp: "4 yrs", skills: ["Full Stack", "SQL", "AWS"], rate: "₹600/60min", rating: 4.7 },
+              ].map(m => (
+                <div key={m.name} className="card-hover p-4 flex items-center gap-4">
+                  <img src={m.img} alt={m.name} className="w-12 h-12 rounded-2xl object-cover shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-bold text-sm" style={{ color: "var(--text)" }}>{m.name}</p>
+                      <div className="flex items-center gap-1">
+                        <Star size={10} className="fill-amber-400 text-amber-400" />
+                        <span className="text-[10px] font-bold" style={{ color: "var(--amber)" }}>{m.rating}</span>
+                      </div>
+                    </div>
+                    <p className="text-xs mb-2" style={{ color: "var(--text-2)" }}>{m.role} · {m.exp}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {m.skills.map(s => (
+                        <span key={s} className="badge badge-dim" style={{ padding: "2px 8px", fontSize: "10px" }}>{s}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-bold" style={{ color: "var(--amber)" }}>{m.rate}</p>
+                    <Link href="/register" className="text-[10px] font-semibold" style={{ color: "var(--text-3)" }}>Book →</Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Testimonials ───────────────────────────── */}
+      <section className="py-24 px-6" style={{ background: "var(--surface)" }}>
         <div className="max-w-5xl mx-auto">
           <div className="reveal text-center mb-16">
-            <p className="eyebrow mb-4">Testimonials</p>
-            <h2 className="font-display font-black leading-tight" style={{ fontSize: "clamp(2.4rem, 5vw, 4rem)" }}>
-              Real people.<br /><span className="text-gradient">Real results.</span>
+            <p className="eyebrow mb-3">What people say</p>
+            <h2 className="font-display font-black leading-[1.1]"
+              style={{ fontSize: "clamp(2.2rem, 4.5vw, 3.8rem)" }}>
+              Real people.<br /><span className="text-gradient">Real outcomes.</span>
             </h2>
           </div>
+
           <div className="reveal-stagger grid md:grid-cols-2 gap-5">
-            {testimonials.map(({ img, name, role, quote, stars }) => (
+            {testimonials.map(({ img, name, role, quote }) => (
               <div key={name} className="card-hover p-7">
-                <div className="flex gap-0.5 mb-5">
-                  {[...Array(stars)].map((_, i) => <Star key={i} size={14} className="fill-amber-400 text-amber-400" />)}
-                </div>
-                <p className="text-base leading-relaxed mb-6" style={{ color: "var(--text-2)" }}>"{quote}"</p>
-                <div className="flex items-center gap-3">
+                <Quote size={24} className="mb-5 opacity-20" style={{ color: "var(--amber)" }} />
+                <p className="text-base leading-relaxed mb-7" style={{ color: "var(--text-2)", fontStyle: "italic" }}>
+                  "{quote}"
+                </p>
+                <div className="flex items-center gap-3.5">
                   <img src={img} alt={name} className="w-11 h-11 rounded-2xl object-cover" />
                   <div>
-                    <p className="font-bold text-sm">{name}</p>
-                    <p className="text-xs" style={{ color: "var(--text-2)" }}>{role}</p>
+                    <p className="font-bold text-sm" style={{ color: "var(--text)" }}>{name}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--text-2)" }}>{role}</p>
+                  </div>
+                  <div className="ml-auto flex gap-0.5">
+                    {[...Array(5)].map((_, i) => <Star key={i} size={11} className="fill-amber-400 text-amber-400" />)}
                   </div>
                 </div>
               </div>
@@ -553,48 +573,75 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── Final CTA ─────────────────────────────── */}
-      <section className="py-28 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="reveal relative overflow-hidden rounded-3xl p-14 text-center" style={{ background: "var(--surface-2)", border: "1px solid var(--border-2)" }}>
-            <div className="absolute w-80 h-80 rounded-full blur-3xl pointer-events-none -top-20 -left-20 opacity-20" style={{ background: "radial-gradient(circle, var(--amber) 0%, transparent 70%)" }} />
-            <div className="absolute w-60 h-60 rounded-full blur-3xl pointer-events-none -bottom-10 -right-10 opacity-10" style={{ background: "radial-gradient(circle, var(--indigo) 0%, transparent 70%)" }} />
+      {/* ── Final CTA ──────────────────────────────── */}
+      <section className="py-24 px-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="reveal relative overflow-hidden rounded-3xl p-14 text-center"
+            style={{ background: "var(--surface-2)", border: "1px solid var(--border-2)" }}>
+            <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full pointer-events-none"
+              style={{ background: "radial-gradient(circle, rgba(245,158,11,0.18) 0%, transparent 70%)", filter: "blur(40px)" }} />
+            <div className="absolute -bottom-10 -right-10 w-60 h-60 rounded-full pointer-events-none"
+              style={{ background: "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)", filter: "blur(40px)" }} />
+
             <div className="relative z-10">
-              <p className="eyebrow mb-5">Get Started</p>
-              <h2 className="font-display font-black leading-tight mb-4" style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)" }}>
+              <p className="eyebrow mb-5">Join Today</p>
+              <h2 className="font-display font-black leading-[1.1] mb-4"
+                style={{ fontSize: "clamp(2.2rem, 4.5vw, 3.8rem)" }}>
                 Your next hire is<br /><span className="text-gradient">already verified.</span>
               </h2>
-              <p className="text-base mb-10 max-w-xl mx-auto" style={{ color: "var(--text-2)" }}>
-                Join 2,400+ professionals. Free to join. No credit card. Start today.
+              <p className="text-base mb-10 max-w-lg mx-auto" style={{ color: "var(--text-2)" }}>
+                Join 2,400+ professionals who've stopped guessing and started hiring with proof.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <Link href="/register?role=candidate" className="btn-primary btn-xl">I'm a Candidate <ArrowRight size={17} /></Link>
-                <Link href="/register?role=hr" className="btn-secondary btn-xl">Post a Job</Link>
+                <Link href="/register?role=candidate" className="btn-primary btn-lg">
+                  I'm a Candidate <ArrowRight size={16} />
+                </Link>
+                <Link href="/register?role=hr" className="btn-secondary btn-lg">
+                  Post a Job Free
+                </Link>
               </div>
+              <p className="text-xs mt-6" style={{ color: "var(--text-3)" }}>
+                Free to join · No credit card · Takes 2 minutes
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─── Footer ────────────────────────────────── */}
-      <footer className="px-6 lg:px-10 py-12" style={{ borderTop: "1px solid var(--border)" }}>
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      {/* ── Footer ─────────────────────────────────── */}
+      <footer className="px-6 lg:px-12 py-10" style={{ borderTop: "1px solid var(--border)" }}>
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center font-display font-black text-sm" style={{ background: "var(--amber)", color: "#050507" }}>S1</div>
-            <span className="font-display font-bold" style={{ color: "var(--text)" }}>Skill1 <span style={{ color: "var(--amber)" }}>Hire</span></span>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center font-display font-black text-xs"
+              style={{ background: "var(--amber)", color: "#050507" }}>S1</div>
+            <span className="font-display font-bold text-sm" style={{ color: "var(--text)" }}>
+              Skill1 <span style={{ color: "var(--amber)" }}>Hire</span>
+            </span>
           </Link>
-          <div className="flex items-center gap-8">
-            {["/jobs", "/register?role=candidate", "/register?role=hr", "/register?role=mentor"].map((href, i) => (
-              <Link key={href} href={href} className="text-xs font-medium transition-colors" style={{ color: "var(--text-3)" }}
+
+          <div className="flex items-center gap-6">
+            {[
+              { href: "/jobs", label: "Browse Jobs" },
+              { href: "/register?role=candidate", label: "For Candidates" },
+              { href: "/register?role=hr", label: "For HRs" },
+              { href: "/register?role=mentor", label: "Become a Mentor" },
+            ].map(({ href, label }) => (
+              <Link key={href} href={href}
+                className="text-xs font-medium transition-colors"
+                style={{ color: "var(--text-3)" }}
                 onMouseEnter={e => e.currentTarget.style.color = "var(--amber)"}
                 onMouseLeave={e => e.currentTarget.style.color = "var(--text-3)"}>
-                {["Browse Jobs", "For Candidates", "For HRs", "Become Mentor"][i]}
+                {label}
               </Link>
             ))}
           </div>
-          <p className="text-xs" style={{ color: "var(--text-3)" }}>© 2025 Skill1 Hire. Built for quality.</p>
+
+          <p className="text-xs" style={{ color: "var(--text-3)" }}>
+            © 2025 Skill1 Hire
+          </p>
         </div>
       </footer>
+
     </div>
   );
 }
